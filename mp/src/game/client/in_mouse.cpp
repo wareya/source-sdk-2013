@@ -91,11 +91,14 @@ static ConVar m_forward( "m_forward","1", FCVAR_ARCHIVE, "Mouse forward factor."
 static ConVar m_customaccel( "m_customaccel", "0", FCVAR_ARCHIVE, "Custom mouse acceleration:"
 	"\n0: custom accelaration disabled"
 	"\n1: mouse_acceleration = min(m_customaccel_max, pow(raw_mouse_delta, m_customaccel_exponent) * m_customaccel_scale + sensitivity)"
-	"\n2: Same as 1, with but x and y sensitivity are scaled by m_pitch and m_yaw respectively."
+	"\n2: Same as 1, but with x and y sensitivity are scaled by m_pitch and m_yaw respectively."
 	"\n3: mouse_acceleration = pow(raw_mouse_delta, m_customaccel_exponent - 1) * sensitivity"
+	"\n5: factor = constrain(pow(raw_mouse_delta * framescale * m_customaccel_scale, m_customaccel_exponent) / raw_mouse_delta); applied on top of sensitivity"
+	"\n6: Same as 5, but with exponent incremented by 1. Useful for negative mouse acceleration."
 	);
 static ConVar m_customaccel_scale( "m_customaccel_scale", "0.04", FCVAR_ARCHIVE, "Custom mouse acceleration value.", true, 0, false, 0.0f );
 static ConVar m_customaccel_max( "m_customaccel_max", "0", FCVAR_ARCHIVE, "Max mouse move scale factor, 0 for no limit" );
+static ConVar m_customaccel_rate( "m_customaccel_rate", "60", FCVAR_ARCHIVE, "Virtual tickrate for mouse accel framerate independence", true, 1.0f, false, 0.0f);
 static ConVar m_customaccel_exponent( "m_customaccel_exponent", "1", FCVAR_ARCHIVE, "Mouse move is raised to this power before being scaled by scale factor.", true, 1.0f, false, 0.0f);
 
 static ConVar m_mousespeed( "m_mousespeed", "1", FCVAR_ARCHIVE, "Windows mouse acceleration (0 to disable, 1 to enable [Windows 2000: enable initial threshold], 2 to enable secondary threshold [Windows 2000 only]).", true, 0, true, 2 );
@@ -435,6 +438,22 @@ void CInput::ScaleMouse( float *x, float *y )
 
 		*x *= accelerated_sensitivity; 
 		*y *= accelerated_sensitivity; 
+	}
+	else if ( m_customaccel.GetInt() == 5 || m_customaccel.GetInt() == 6 )
+	{   // Form: factor = f(olddelta*scale)/olddelta
+		float frame_factor = gpGlobals->frametime * m_customaccel_rate.GetFloat() * m_customaccel_scale.GetFloat();
+		float raw_mouse_delta = sqrt( mx * mx + my * my ) * frame_factor;
+		if ( raw_mouse_delta == 0 )
+			return;
+		float acceleration_exponent = m_customaccel_exponent.GetFloat();
+		if ( m_customaccel.GetInt() == 6 )
+			acceleration_exponent -= 1;
+		float accelerated_delta = powf( raw_mouse_delta, acceleration_exponent );
+		float acceleration_max = m_customaccel_max.GetFloat() > 1 ? m_customaccel_max.GetFloat() : 0;
+		float acceleration_factor = MIN( acceleration_max, accelerated_delta / raw_mouse_delta );
+
+		*x *= acceleration_factor * mouse_sensitivity; 
+		*y *= acceleration_factor * mouse_sensitivity;
 	}
 	else
 	{ 

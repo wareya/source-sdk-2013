@@ -1646,7 +1646,7 @@ void CGameMovement::Friction( void )
 			}
 			else
 			{
-#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
+#if 1
 				control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
 #else
 				control = (speed < sv_stopspeed.GetFloat()) ? (sv_stopspeed.GetFloat() * 2.0f) : speed;
@@ -2404,11 +2404,12 @@ bool CGameMovement::CheckJumpButton( void )
 		return false;
 #endif
 
-	if ( mv->m_nOldButtons & IN_JUMP )
-		return false;		// don't pogo stick
+	// do pogo stick jumping, so commented out
+	//if ( mv->m_nOldButtons & IN_JUMP )
+	//	return true;
 
-	// Cannot jump will in the unduck transition.
-	if ( player->m_Local.m_bDucking && (  player->GetFlags() & FL_DUCKING ) )
+	// Cannot jump while fully ducked
+	if (  player->GetFlags() & FL_DUCKING )
 		return false;
 
 	// Still updating the eye position.
@@ -2430,16 +2431,9 @@ bool CGameMovement::CheckJumpButton( void )
 	}
 
 	float flMul;
-	if ( g_bMovementOptimizations )
+	if ( true )//( g_bMovementOptimizations )
 	{
-#if defined(HL2_DLL) || defined(HL2_CLIENT_DLL)
-		Assert( GetCurrentGravity() == 600.0f );
-		flMul = 160.0f;	// approx. 21 units.
-#else
-		Assert( GetCurrentGravity() == 800.0f );
-		flMul = 268.3281572999747f;
-#endif
-
+		flMul = sv_jumpspeed.GetFloat();
 	}
 	else
 	{
@@ -2464,36 +2458,27 @@ bool CGameMovement::CheckJumpButton( void )
 		mv->m_vecVelocity[2] += flGroundFactor * flMul;  // 2 * gravity * height
 	}
 
-	// Add a little forward velocity based on your current forward velocity - if you are not sprinting.
-#if defined( HL2_DLL ) || defined( HL2_CLIENT_DLL )
-	if ( gpGlobals->maxClients == 1 )
+	// Lower velocity when jumping when over 320
 	{
-		CHLMoveData *pMoveData = ( CHLMoveData* )mv;
 		Vector vecForward;
-		AngleVectors( mv->m_vecViewAngles, &vecForward );
+		VectorCopy( mv->m_vecVelocity, vecForward );
 		vecForward.z = 0;
-		VectorNormalize( vecForward );
-		
-		// We give a certain percentage of the current forward movement as a bonus to the jump speed.  That bonus is clipped
-		// to not accumulate over time.
-		float flSpeedBoostPerc = ( !pMoveData->m_bIsSprinting && !player->m_Local.m_bDucked ) ? 0.5f : 0.1f;
-		float flSpeedAddition = fabs( mv->m_flForwardMove * flSpeedBoostPerc );
-		float flMaxSpeed = mv->m_flMaxSpeed + ( mv->m_flMaxSpeed * flSpeedBoostPerc );
-		float flNewSpeed = ( flSpeedAddition + mv->m_vecVelocity.Length2D() );
-
-		// If we're over the maximum, we want to only boost as much as will get us to the goal speed
-		if ( flNewSpeed > flMaxSpeed )
+		float startSpeed = vecForward.Length();
+		if(startSpeed > 320.f)
 		{
-			flSpeedAddition -= flNewSpeed - flMaxSpeed;
+			float hSpeedFactor = MAX(0.f, startSpeed - 320.f); // Factor for the portion of inertia past 320
+			hSpeedFactor = -powf(hSpeedFactor, 0.75) / startSpeed * 0.5; // This just feels right
+			
+			// Prevent speed from crossing below 320 from operation
+			if(startSpeed - startSpeed*hSpeedFactor < 320.f)
+			{
+				hSpeedFactor = MAX(0.f, startSpeed - 320.f); // desired speed
+				hSpeedFactor = hSpeedFactor / startSpeed; // factor for it
+			}
+			// Add it on
+			VectorAdd( (vecForward*hSpeedFactor), mv->m_vecVelocity, mv->m_vecVelocity );
 		}
-
-		if ( mv->m_flForwardMove < 0.0f )
-			flSpeedAddition *= -1.0f;
-
-		// Add it on
-		VectorAdd( (vecForward*flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity );
 	}
-#endif
 
 	FinishGravity();
 

@@ -111,6 +111,7 @@ state bit 2 is edge triggered on the down to up transition
 
 kbutton_t	in_speed;
 kbutton_t	in_walk;
+kbutton_t	in_cjump;
 kbutton_t	in_jlook;
 kbutton_t	in_strafe;
 kbutton_t	in_commandermousemove;
@@ -461,6 +462,8 @@ void IN_MoverightDown( const CCommand &args ) {KeyDown(&in_moveright, args[1] );
 void IN_MoverightUp( const CCommand &args ) {KeyUp(&in_moveright, args[1] );}
 void IN_WalkDown( const CCommand &args ) {KeyDown(&in_walk, args[1] );}
 void IN_WalkUp( const CCommand &args ) {KeyUp(&in_walk, args[1] );}
+void IN_CJumpDown( const CCommand &args ) {KeyDown(&in_jump, args[1] ); KeyDown(&in_duck, args[1] );}
+void IN_CJumpUp( const CCommand &args ) {KeyUp(&in_jump, args[1] ); KeyUp(&in_duck, args[1] );}
 void IN_SpeedDown( const CCommand &args ) {KeyDown(&in_speed, args[1] );}
 void IN_SpeedUp( const CCommand &args ) {KeyUp(&in_speed, args[1] );}
 void IN_StrafeDown( const CCommand &args ) {KeyDown(&in_strafe, args[1] );}
@@ -1587,6 +1590,8 @@ static ConCommand startspeed("+speed", IN_SpeedDown);
 static ConCommand endspeed("-speed", IN_SpeedUp);
 static ConCommand startwalk("+walk", IN_WalkDown);
 static ConCommand endwalk("-walk", IN_WalkUp);
+static ConCommand startcjump("+cjump", IN_CJumpDown);
+static ConCommand endcjump("-cjump", IN_CJumpUp);
 static ConCommand startattack("+attack", IN_AttackDown);
 static ConCommand endattack("-attack", IN_AttackUp);
 static ConCommand startattack2("+attack2", IN_Attack2Down);

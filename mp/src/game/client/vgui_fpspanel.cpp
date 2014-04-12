@@ -265,6 +265,13 @@ void CFPSPanel::Paint()
 				GetFPSColor( nFps, ucColor );
 				g_pMatSystemSurface->DrawColoredText( m_hFont, x, 2, ucColor[0], ucColor[1], ucColor[2], 255, "%3i fps (%3i, %3i) %.1f ms on %s", nFps, m_low, m_high, frameMS, engine->GetLevelName() );
 			} 
+			else if ( cl_showfps.GetInt() == 3 )
+			{
+				m_AverageFPS = -1;
+				nFps = static_cast<int>( 1.0f / realFrameTime );
+				GetFPSColor( nFps, ucColor );
+				g_pMatSystemSurface->DrawColoredText( m_hFont, x, 2, ucColor[0], ucColor[1], ucColor[2], 255, "%3i fps %3.2f frametime", nFps, gpGlobals->frametime * 1000.f );
+			}
 			else
 			{
 				m_AverageFPS = -1;
@@ -307,7 +314,13 @@ void CFPSPanel::Paint()
 		C_BasePlayer *player = C_BasePlayer::GetLocalPlayer();
 		if ( player )
 		{
-			vel = player->GetLocalVelocity();
+			if(nShowPosMode != 3)
+				vel = player->GetLocalVelocity();
+			else
+			{
+				vel.x = player->GetLocalVelocity().x;
+				vel.y = player->GetLocalVelocity().y;
+			}
 		}
 
 		g_pMatSystemSurface->DrawColoredText( m_hFont, x, 2 + i * ( vgui::surface()->GetFontTall( m_hFont ) + 2 ), 

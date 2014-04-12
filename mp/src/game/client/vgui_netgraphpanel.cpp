@@ -42,6 +42,7 @@ static ConVar	net_graphshowinterp ( "net_graphshowinterp", "1", FCVAR_ARCHIVE, "
 void NetgraphFontChangeCallback( IConVar *var, const char *pOldValue, float flOldValue );
 
 static ConVar	net_graph			( "net_graph","0", FCVAR_ARCHIVE, "Draw the network usage graph, = 2 draws data on payload, = 3 draws payload legend.", NetgraphFontChangeCallback );
+static ConVar	net_graphmode		( "net_graphmode","0", FCVAR_ARCHIVE, "0 = normal; 1 = minimal text", NetgraphFontChangeCallback );
 static ConVar	net_graphheight		( "net_graphheight", "64", FCVAR_ARCHIVE, "Height of netgraph panel", NetgraphFontChangeCallback );
 static ConVar	net_graphproportionalfont( "net_graphproportionalfont", "1", FCVAR_ARCHIVE, "Determines whether netgraph font is proportional or not", NetgraphFontChangeCallback );
 
@@ -729,35 +730,27 @@ void CNetGraphPanel::DrawTextFields( int graphvalue, int x, int y, int w, netban
 
 	if ( engine->IsPlayingDemo() )
 		m_AvgLatency = 0.0f;
-
-	int textTall = surface()->GetFontTall( font );
-
-	Q_snprintf( sz, sizeof( sz ), "fps:%4i   ping: %i ms", (int)(1.0f / m_Framerate), (int)(m_AvgLatency*1000.0f) );
 	
+	int textTall = surface()->GetFontTall( font );
+	
+	Q_snprintf( sz, sizeof( sz ), "fps:%4i   ", (int)(1.0f / m_Framerate) );
 	g_pMatSystemSurface->DrawColoredText( font, x, y, GRAPH_RED, GRAPH_GREEN, GRAPH_BLUE, 255, sz );
+	int textWidth = g_pMatSystemSurface->DrawTextLen( font, "%s", sz ); // decl needed, or it would be in latter if's else
+	if( net_graphmode.GetBool() )
+	{
+		y += textTall;
+		textWidth = 0;
+	}
+	Q_snprintf( sz, sizeof( sz ), "ping: %i ms   ", (int)(m_AvgLatency*1000.0f) );
+	g_pMatSystemSurface->DrawColoredText( font, x, y, GRAPH_RED, GRAPH_GREEN, GRAPH_BLUE, 255, sz );
+	if( net_graphmode.GetBool() )
+		y += textTall;
+	else
+		textWidth += g_pMatSystemSurface->DrawTextLen( font, "%s", sz );
+	
 
 	// Draw update rate
 	DrawUpdateRate( x + w, y );
-
-	y += textTall;
-
-	out = cmdinfo[ ( ( m_OutgoingSequence - 1 ) & ( TIMINGS - 1 ) ) ].size;
-	if ( !out )
-	{
-		out = lastout;
-	}
-	else
-	{
-		lastout = out;
-	}
-
-	int totalsize = graph[ ( m_IncomingSequence & ( TIMINGS - 1 ) ) ].msgbytes[INetChannelInfo::TOTAL];
-	
-	Q_snprintf( sz, sizeof( sz ), "in :%4i   %2.2f k/s ", totalsize, m_IncomingData );
-
-	int textWidth = g_pMatSystemSurface->DrawTextLen( font, "%s", sz );
-
-	g_pMatSystemSurface->DrawColoredText( font, x, y, GRAPH_RED, GRAPH_GREEN, GRAPH_BLUE, 255, sz );
 
 	Q_snprintf( sz, sizeof( sz ), "lerp: %5.1f ms", GetClientInterpAmount() * 1000.0f );
 
@@ -782,23 +775,47 @@ void CNetGraphPanel::DrawTextFields( int graphvalue, int x, int y, int w, netban
 	}
 
 	g_pMatSystemSurface->DrawColoredText( font, x + textWidth, y, interpcolor[ 0 ], interpcolor[ 1 ], interpcolor[ 2 ], 255, sz );
+	
+	if( net_graphmode.GetBool() )
+		y -= textTall;
+	else
+		y += textTall;
 
+	out = cmdinfo[ ( ( m_OutgoingSequence - 1 ) & ( TIMINGS - 1 ) ) ].size;
+	if ( !out )
+	{
+		out = lastout;
+	}
+	else
+	{
+		lastout = out;
+	}
+
+	int totalsize = graph[ ( m_IncomingSequence & ( TIMINGS - 1 ) ) ].msgbytes[INetChannelInfo::TOTAL];
+
+	if( !net_graphmode.GetBool() )
+	{
+		Q_snprintf( sz, sizeof( sz ), "in :%4i   %2.2f k/s ", totalsize, m_IncomingData );
+		textWidth = g_pMatSystemSurface->DrawTextLen( font, "%s", sz );
+		g_pMatSystemSurface->DrawColoredText( font, x, y, GRAPH_RED, GRAPH_GREEN, GRAPH_BLUE, 255, sz );
+	}
 	Q_snprintf( sz, sizeof( sz ), "%3.1f/s", m_AvgPacketIn );
 	textWidth = g_pMatSystemSurface->DrawTextLen( font, "%s", sz );
-
 	g_pMatSystemSurface->DrawColoredText( font, x + w - textWidth - 1, y, GRAPH_RED, GRAPH_GREEN, GRAPH_BLUE, 255, sz );
-
+	
 	y += textTall;
 
-	Q_snprintf( sz, sizeof( sz ), "out:%4i   %2.2f k/s", out, m_OutgoingData );
-
-	g_pMatSystemSurface->DrawColoredText( font, x, y, GRAPH_RED, GRAPH_GREEN, GRAPH_BLUE, 255, sz );
+	if( !net_graphmode.GetBool() )
+	{
+		Q_snprintf( sz, sizeof( sz ), "out:%4i   %2.2f k/s", out, m_OutgoingData );
+		g_pMatSystemSurface->DrawColoredText( font, x, y, GRAPH_RED, GRAPH_GREEN, GRAPH_BLUE, 255, sz );
+	}
 
 	Q_snprintf( sz, sizeof( sz ), "%3.1f/s", m_AvgPacketOut );
 	textWidth = g_pMatSystemSurface->DrawTextLen( font, "%s", sz );
 
 	g_pMatSystemSurface->DrawColoredText( font, x + w - textWidth - 1, y, GRAPH_RED, GRAPH_GREEN, GRAPH_BLUE, 255, sz );
-
+	
 	y += textTall;
 
 	DrawCmdRate( x + w, y );

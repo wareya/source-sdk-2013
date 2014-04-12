@@ -37,7 +37,7 @@ BEGIN_PREDICTION_DATA( C_HL2MP_Player )
 END_PREDICTION_DATA()
 
 #define	HL2_WALK_SPEED 150
-#define	HL2_NORM_SPEED 190
+#define	HL2_NORM_SPEED 240
 #define	HL2_SPRINT_SPEED 320
 
 static ConVar cl_playermodel( "cl_playermodel", "none", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_SERVER_CAN_EXECUTE, "Default Player Model");
@@ -566,6 +566,8 @@ bool C_HL2MP_Player::CanSprint( void )
 //-----------------------------------------------------------------------------
 void C_HL2MP_Player::StartSprinting( void )
 {
+	return;
+	/*
 	if( m_HL2Local.m_flSuitPower < 10 )
 	{
 		// Don't sprint unless there's a reasonable
@@ -581,7 +583,7 @@ void C_HL2MP_Player::StartSprinting( void )
 	EmitSound( filter, entindex(), "HL2Player.SprintStart" );
 
 	SetMaxSpeed( HL2_SPRINT_SPEED );
-	m_fIsSprinting = true;
+	m_fIsSprinting = true;*/
 }
 
 
@@ -589,15 +591,16 @@ void C_HL2MP_Player::StartSprinting( void )
 //-----------------------------------------------------------------------------
 void C_HL2MP_Player::StopSprinting( void )
 {
-	SetMaxSpeed( HL2_NORM_SPEED );
-	m_fIsSprinting = false;
+	return;
+	/*SetMaxSpeed( HL2_NORM_SPEED );
+	m_fIsSprinting = false;*/
 }
 
 void C_HL2MP_Player::HandleSpeedChanges( void )
 {
 	int buttonsChanged = m_afButtonPressed | m_afButtonReleased;
 
-	if( buttonsChanged & IN_SPEED )
+	/*if( buttonsChanged & IN_SPEED )
 	{
 		// The state of the sprint/run button has changed.
 		if ( IsSuitEquipped() )
@@ -610,7 +613,7 @@ void C_HL2MP_Player::HandleSpeedChanges( void )
 			{
 				if ( CanSprint() )
 				{
-					StartSprinting();
+					//StartSprinting();
 				}
 				else
 				{
@@ -620,7 +623,7 @@ void C_HL2MP_Player::HandleSpeedChanges( void )
 			}
 		}
 	}
-	else if( buttonsChanged & IN_WALK )
+	else */if( buttonsChanged & IN_WALK )
 	{
 		if ( IsSuitEquipped() )
 		{

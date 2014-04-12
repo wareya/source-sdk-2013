@@ -316,16 +316,22 @@ void CWeaponShotgun::PrimaryAttack( void )
 
 	Vector	vecSrc		= pPlayer->Weapon_ShootPosition( );
 	Vector	vecAiming	= pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );	
-
-	FireBulletsInfo_t info( 7, vecSrc, vecAiming, GetBulletSpread(), MAX_TRACE_LENGTH, m_iPrimaryAmmoType );
+	
+	// center shot 1/7 0 degrees
+	FireBulletsInfo_t info( 1, vecSrc, vecAiming, Vector(0, 0, 0), MAX_TRACE_LENGTH, m_iPrimaryAmmoType );
+	// inner cone 2/7 7 degrees
+	FireBulletsInfo_t info2( 2, vecSrc, vecAiming, GetBulletSpread()*0.7, MAX_TRACE_LENGTH, m_iPrimaryAmmoType );
+	// inner cone 4/7 10 degrees
+	FireBulletsInfo_t info3( 4, vecSrc, vecAiming, GetBulletSpread(), MAX_TRACE_LENGTH, m_iPrimaryAmmoType );
 	info.m_pAttacker = pPlayer;
+	info2.m_pAttacker = pPlayer;
 
 	// Fire the bullets, and force the first shot to be perfectly accuracy
 	pPlayer->FireBullets( info );
+	pPlayer->FireBullets( info2 );
+	pPlayer->FireBullets( info3 );
 	
-	QAngle punch;
-	punch.Init( SharedRandomFloat( "shotgunpax", -2, -1 ), SharedRandomFloat( "shotgunpay", -2, 2 ), 0 );
-	pPlayer->ViewPunch( punch );
+	pPlayer->ViewPunch( QAngle(-2,0,0) );
 
 	if (!m_iClip1 && pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0)
 	{
@@ -368,13 +374,20 @@ void CWeaponShotgun::SecondaryAttack( void )
 
 	Vector vecSrc	 = pPlayer->Weapon_ShootPosition();
 	Vector vecAiming = pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );	
-
-	FireBulletsInfo_t info( 12, vecSrc, vecAiming, GetBulletSpread(), MAX_TRACE_LENGTH, m_iPrimaryAmmoType );
+	
+	// center shot 1/14 0 degrees
+	FireBulletsInfo_t info( 1, vecSrc, vecAiming, Vector(0, 0, 0), MAX_TRACE_LENGTH, m_iPrimaryAmmoType );
+	// inner cone 3/14 8 degrees
+	FireBulletsInfo_t info2( 3, vecSrc, vecAiming, GetBulletSpread()*0.8, MAX_TRACE_LENGTH, m_iPrimaryAmmoType );
+	// outer cone 9/14 14 degrees
+	FireBulletsInfo_t info3( 9, vecSrc, vecAiming, GetBulletSpread()*1.4, MAX_TRACE_LENGTH, m_iPrimaryAmmoType );
 	info.m_pAttacker = pPlayer;
-
-	// Fire the bullets, and force the first shot to be perfectly accuracy
+	info2.m_pAttacker = pPlayer;
+	
 	pPlayer->FireBullets( info );
-	pPlayer->ViewPunch( QAngle(SharedRandomFloat( "shotgunsax", -5, 5 ),0,0) );
+	pPlayer->FireBullets( info2 );
+	pPlayer->FireBullets( info3 );
+	pPlayer->ViewPunch( QAngle(-5,0,0) );
 
 	if (!m_iClip1 && pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0)
 	{
