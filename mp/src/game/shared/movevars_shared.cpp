@@ -87,9 +87,10 @@ ConVar	sv_rollangle	( "sv_rollangle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCV
 #if defined( DOD_DLL ) || defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
 ConVar	sv_friction		( "sv_friction","4", FCVAR_NOTIFY | FCVAR_REPLICATED, "World friction." );
 #else
-ConVar	sv_friction		( "sv_friction","6", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT, "World friction." );
+ConVar	sv_friction		( "sv_friction","5", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT, "World friction." );
 #endif // DOD_DLL || CSTRIKE_DLL
-ConVar	sv_counteracceleration( "sv_counteracceleration","100", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT, "Amount to subtract from run speed while not controlling movement to smoothly approach 0 speed." );
+ConVar	sv_extrawalkfriction		( "sv_extrawalkfriction","2", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT, "Extra friction when walking (reduce \"ice skating\")." );
+ConVar	sv_counteracceleration( "sv_counteracceleration","150", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT, "Amount to subtract from run speed while not controlling movement to smoothly approach 0 speed." );
 
 #if defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
 ConVar	sv_bounce		( "sv_bounce","0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Bounce multiplier for when physically simulated objects collide with other objects." );

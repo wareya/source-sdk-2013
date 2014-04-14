@@ -1633,8 +1633,10 @@ void CGameMovement::Friction( void )
 	// apply ground friction
 	if (player->GetGroundEntity() != NULL)  // On an entity that is the ground
 	{
-		friction = sv_friction.GetFloat() * player->m_surfaceFriction;
-
+		if(mv->m_flForwardMove == 0.0f && mv->m_flSideMove == 0.0f)
+			friction = sv_friction.GetFloat() * player->m_surfaceFriction;
+		else
+			friction = (sv_friction.GetFloat() + sv_extrawalkfriction.GetFloat()) * player->m_surfaceFriction;
 		// Bleed off some speed, but if we have less than the bleed
 		//  threshold, bleed the threshold amount.
 
