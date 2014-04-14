@@ -2096,6 +2096,14 @@ void CGameMovement::FullWalkMove( )
 		{
 			mv->m_vecVelocity[2] = 0.0;
 			Friction();
+
+			auto speed = VectorLength( mv->m_vecVelocity );
+			if(speed != 0 && mv->m_flForwardMove == 0.0f && mv->m_flSideMove == 0.0f)
+			{
+				auto friction = sv_counteracceleration.GetFloat() * gpGlobals->frametime;
+				auto newspeed = (speed-friction) > 0 ? (speed-friction) : 0;
+				VectorScale(mv->m_vecVelocity, newspeed/speed, mv->m_vecVelocity);
+			}
 		}
 
 		// Make sure velocity is valid.

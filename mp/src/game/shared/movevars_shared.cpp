@@ -34,14 +34,14 @@ float GetCurrentGravity( void )
 	return sv_gravity.GetFloat();
 }
 
-ConVar	sv_jumpspeed	( "sv_jumpspeed", "200", FCVAR_NOTIFY | FCVAR_REPLICATED, "Initial upwards inertia when jumping" );
+ConVar	sv_jumpspeed	( "sv_jumpspeed", "265", FCVAR_NOTIFY | FCVAR_REPLICATED, "Initial upwards inertia when jumping" );
 
-ConVar	sv_gravity		( "sv_gravity", DEFAULT_GRAVITY_STRING, FCVAR_NOTIFY | FCVAR_REPLICATED, "World gravity." );
+ConVar	sv_gravity		( "sv_gravity", "800", FCVAR_NOTIFY | FCVAR_REPLICATED, "World gravity." );
 
 #if defined( DOD_DLL ) || defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
 ConVar	sv_stopspeed	( "sv_stopspeed","100", FCVAR_NOTIFY | FCVAR_REPLICATED, "Minimum stopping speed when on ground." );
 #else
-ConVar	sv_stopspeed	( "sv_stopspeed","50", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT, "Minimum stopping speed when on ground." );
+ConVar	sv_stopspeed	( "sv_stopspeed","0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT, "Minimum stopping speed when on ground." );
 #endif // DOD_DLL || CSTRIKE_DLL
 
 ConVar	sv_noclipaccelerate( "sv_noclipaccelerate", "5", FCVAR_NOTIFY | FCVAR_ARCHIVE | FCVAR_REPLICATED);
@@ -87,8 +87,9 @@ ConVar	sv_rollangle	( "sv_rollangle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCV
 #if defined( DOD_DLL ) || defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
 ConVar	sv_friction		( "sv_friction","4", FCVAR_NOTIFY | FCVAR_REPLICATED, "World friction." );
 #else
-ConVar	sv_friction		( "sv_friction","8", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT, "World friction." );
+ConVar	sv_friction		( "sv_friction","6", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT, "World friction." );
 #endif // DOD_DLL || CSTRIKE_DLL
+ConVar	sv_counteracceleration( "sv_counteracceleration","100", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT, "Amount to subtract from run speed while not controlling movement to smoothly approach 0 speed." );
 
 #if defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
 ConVar	sv_bounce		( "sv_bounce","0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Bounce multiplier for when physically simulated objects collide with other objects." );
