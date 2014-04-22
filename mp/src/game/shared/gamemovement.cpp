@@ -1703,6 +1703,36 @@ void CGameMovement::FinishGravity( void )
 
 //-----------------------------------------------------------------------------
 // Purpose: 
+//-----------------------------------------------------------------------------
+float CGameMovement::GetAirSpeedCap( void )
+{
+	Vector vec;
+	for (char i=0 ; i<2 ; i++)
+		vec[i] = mv->m_vecVelocity[i];
+	vec[2] = 0;
+
+	Vector ctrl;
+	ctrl[0] = mv->m_flSideMove;
+	ctrl[1] = mv->m_flForwardMove;
+	ctrl[2] = 0;
+	float clen = ctrl.Length();
+	if(clen > 0.0)
+	{
+		float controllan = (fabs(mv->m_flForwardMove) - fabs(mv->m_flSideMove))/clen+1;// 0 ~ 2 : side ~ forward
+		controllan = (controllan < 1.0) ? controllan : 2.0 - controllan;// reflect clip so that 0 ~ 1 ~ 0 : side ~ diagonal ~ forward
+
+		ConMsg("Vars: %f %f %f\n", controllan, vec.Length(), controllan * vec.Length() + 30.f);
+
+		return controllan
+			* vec.Length()
+			+ 30.f // base max
+			;
+	}
+	else
+		return 30.f;
+}
+//-----------------------------------------------------------------------------
+// Purpose: 
 // Input  : wishdir - 
 //			accel - 
 //-----------------------------------------------------------------------------
@@ -1711,6 +1741,15 @@ void CGameMovement::AirAccelerate( Vector& wishdir, float wishspeed, float accel
 	int i;
 	float addspeed, accelspeed, currentspeed;
 	float wishspd;
+	
+	Vector ctrl;
+	ctrl[0] = mv->m_flSideMove;
+	ctrl[1] = mv->m_flForwardMove;
+	ctrl[2] = 0;
+	float clen = ctrl.Length(); // length of control
+	float controllan = (fabs(mv->m_flSideMove) - fabs(mv->m_flForwardMove))/clen;// -1 ~ 1 : forward ~ side
+	controllan = controllan * controllan * 0.875 + 0.125; // 1.0 at forwards, 0.125 at 45 deg control, 1 at sideways control -- perfect!
+	ConMsg("Vars2: %f\n", controllan);
 
 	wishspd = wishspeed;
 	
@@ -1735,7 +1774,7 @@ void CGameMovement::AirAccelerate( Vector& wishdir, float wishspeed, float accel
 		return;
 
 	// Determine acceleration speed after acceleration
-	accelspeed = accel * wishspeed * gpGlobals->frametime * player->m_surfaceFriction;
+	accelspeed = accel * wishspeed * gpGlobals->frametime * player->m_surfaceFriction * controllan;
 
 	// Cap it
 	if (accelspeed > addspeed)
@@ -4791,6 +4830,8 @@ void CGameMovement::FullTossMove( void )
 			VectorScale (wishvel, mv->m_flMaxSpeed/wishspeed, wishvel);
 			wishspeed = mv->m_flMaxSpeed;
 		}
+			ConMsg( "wishspeed = %lf\n", wishspeed );
+			ConMsg( "mv->m_flMaxSpeed = %lf\n", mv->m_flMaxSpeed );
 
 		// Set pmove velocity
 		Accelerate ( wishdir, wishspeed, sv_accelerate.GetFloat() );
