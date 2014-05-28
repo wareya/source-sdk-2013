@@ -101,7 +101,7 @@ protected:
 	virtual void	AirAccelerate( Vector& wishdir, float wishspeed, float accel );
 
 	virtual void	AirMove( void );
-	virtual float	GetAirSpeedCap( void );
+	virtual float	GetAirSpeedCap( float right, float forward );
 	
 	virtual bool	CanAccelerate();
 	virtual void	Accelerate( Vector& wishdir, float wishspeed, float accel);
